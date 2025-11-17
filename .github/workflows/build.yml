@@ -1,4 +1,4 @@
-name: Build SBF (working)
+name: Build SBF From Source
 
 on:
   workflow_dispatch:
@@ -13,20 +13,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Pull official SBF tools
+      - name: Install Rust
         run: |
-          docker pull ghcr.io/anza-xyz/sbf-tools:v1.18
+          curl https://sh.rustup.rs -sSf | sh -s -- -y
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
-      - name: Build Program
+      - name: Install Solana CLI (from source via cargo)
         run: |
-          docker run --rm \
-            -v ${{ github.workspace }}:/work \
-            -w /work \
-            ghcr.io/anza-xyz/sbf-tools:v1.18 \
-            bash -c "cargo build-sbf --manifest-path Cargo.toml"
+          cargo install solana-cli --version 1.18.26
+          solana --version
+
+      - name: Add SBF target
+        run: |
+          rustup target add sbf-solana-solana
+
+      - name: Build SBF program
+        run: |
+          cargo build-sbf --manifest-path Cargo.toml
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: fogo_program
           path: target/deploy/*.so
+
