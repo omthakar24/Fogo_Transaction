@@ -1,39 +1,31 @@
-name: Build SBF (Correct)
+name: Build SBF (working)
 
 on:
-  push:
-    branches: [ "main" ]
   workflow_dispatch:
+  push:
+    branches: ["main"]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Install Solana
+      - name: Pull official SBF tools
         run: |
-          sh -c "$(curl -sSfL https://release.solana.com/v1.18.26/install)"
-          export PATH="/home/runner/.local/share/solana/install/active_release/bin:$PATH"
-          solana --version
+          docker pull ghcr.io/anza-xyz/sbf-tools:v1.18
 
-      - name: Install Rust + SBF target
+      - name: Build Program
         run: |
-          sudo apt update
-          sudo apt install -y pkg-config build-essential libssl-dev
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-          source $HOME/.cargo/env
-          rustup default 1.75.0
-          rustup target add sbf-solana-solana
+          docker run --rm \
+            -v ${{ github.workspace }}:/work \
+            -w /work \
+            ghcr.io/anza-xyz/sbf-tools:v1.18 \
+            bash -c "cargo build-sbf --manifest-path Cargo.toml"
 
-      - name: Build SBF program
-        run: |
-          export PATH="/home/runner/.local/share/solana/install/active_release/bin:$PATH"
-          source $HOME/.cargo/env
-          cargo build-sbf --manifest-path Cargo.toml
-
-      - name: Upload SBF artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: fogo_program
