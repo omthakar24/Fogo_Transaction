@@ -1,4 +1,4 @@
-name: Build SBF from Source
+name: Build SBF From Source
 
 on:
   push:
@@ -20,19 +20,18 @@ jobs:
           source $HOME/.cargo/env
           rustup default stable
 
-      - name: Build Solana SBF toolchain
+      - name: Build Solana SBF Toolchain
         run: |
           git clone https://github.com/solana-labs/solana
           cd solana
           git checkout v1.18.26
-          cargo build --release -p solana-sdk -p solana-program -p solana-zk-sdk
 
-      - name: Build Solana Program
+      - name: Build Program
         run: |
           source $HOME/.cargo/env
           cargo build --release
 
-      - name: Upload Program Artifact
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: fogo_program
