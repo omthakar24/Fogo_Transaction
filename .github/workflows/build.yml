@@ -10,23 +10,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Solana SBF Rust Toolchain
+      - name: Download Solana SBF Tools
         run: |
-          rustup toolchain install nightly-2023-04-25
-          rustup default nightly-2023-04-25
-          rustup component add rust-src --toolchain nightly-2023-04-25
+          wget https://release.solana.com/v1.18.26/solana-release-x86_64-unknown-linux-gnu.tar.bz2
+          tar -xjf solana-release-x86_64-unknown-linux-gnu.tar.bz2
+          mv solana-release-x86_64-unknown-linux-gnu solana
 
-      - name: Add SBF Target
-        run: rustup target add sbf-solana-solana --toolchain nightly-2023-04-25
+      - name: Add Solana tools to PATH
+        run: echo "$GITHUB_WORKSPACE/solana/bin" >> $GITHUB_PATH
 
-      - name: Fetch dependencies
-        run: cargo fetch
+      - name: Verify Solana
+        run: solana --version
 
       - name: Build Program (SBF)
-        run: cargo +nightly-2023-04-25 build-sbf --release
+        run: cargo build-sbf --release
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: fogo_sbf
+          name: fogo_program
           path: target/deploy/*.so
