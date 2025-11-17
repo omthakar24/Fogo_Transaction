@@ -10,22 +10,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download Solana SBF Tools
+      - name: Download Solana SBF Tools (mirror)
         run: |
-          wget https://release.solana.com/v1.18.26/solana-release-x86_64-unknown-linux-gnu.tar.bz2
+          wget https://github.com/anza-xyz/snapshots/releases/download/v1.18.26/solana-release-x86_64-unknown-linux-gnu.tar.bz2
           tar -xjf solana-release-x86_64-unknown-linux-gnu.tar.bz2
           mv solana-release-x86_64-unknown-linux-gnu solana
 
-      - name: Add Solana tools to PATH
+      - name: Add Solana PATH
         run: echo "$GITHUB_WORKSPACE/solana/bin" >> $GITHUB_PATH
 
       - name: Verify Solana
         run: solana --version
 
-      - name: Build Program (SBF)
+      - name: Build SBF Program
         run: cargo build-sbf --release
 
-      - name: Upload Artifact
+      - name: Upload Program Artifact
         uses: actions/upload-artifact@v4
         with:
           name: fogo_program
