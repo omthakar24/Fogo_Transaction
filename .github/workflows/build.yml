@@ -2,38 +2,30 @@ name: Build SBF From Source
 
 on:
   workflow_dispatch:
-  push:
-    branches: ["main"]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Install Rust
-        run: |
-          curl https://sh.rustup.rs -sSf | sh -s -- -y
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
 
-      - name: Install Solana CLI (from source via cargo)
-        run: |
-          cargo install solana-cli --version 1.18.26
-          solana --version
+      - name: Add SBF Target
+        run: rustup target add sbf-solana-solana
 
-      - name: Add SBF target
-        run: |
-          rustup target add sbf-solana-solana
+      - name: Install Solana Program crates (local-only)
+        run: cargo fetch
 
-      - name: Build SBF program
-        run: |
-          cargo build-sbf --manifest-path Cargo.toml
+      - name: Build Program (SBF)
+        run: cargo build-sbf --release
 
-      - name: Upload artifact
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: fogo_program
+          name: fogo_sbf
           path: target/deploy/*.so
-
